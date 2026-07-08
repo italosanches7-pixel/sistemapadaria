@@ -1,27 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+// O administrador NÃO é criado aqui. Ele é criado pela tela de "Primeiro acesso"
+// (/setup) diretamente no navegador, na primeira vez que o sistema é aberto.
+// Este seed cuida apenas de deixar alguns produtos de exemplo cadastrados.
 async function main() {
-  const loginAdmin = process.env.ADMIN_LOGIN ?? "admin";
-  const senhaAdmin = process.env.ADMIN_SENHA ?? "admin123";
-
-  const adminExistente = await prisma.usuario.findUnique({ where: { login: loginAdmin } });
-  if (!adminExistente) {
-    await prisma.usuario.create({
-      data: {
-        nome: "Administrador",
-        login: loginAdmin,
-        senhaHash: await bcrypt.hash(senhaAdmin, 10),
-        papel: "ADMIN",
-      },
-    });
-    console.log(`Usuário admin criado (login: ${loginAdmin}).`);
-  } else {
-    console.log("Usuário admin já existe, pulando criação.");
-  }
-
   const totalProdutos = await prisma.produto.count();
   if (totalProdutos === 0) {
     await prisma.produto.createMany({

@@ -33,18 +33,19 @@ Você vai criar conta em dois serviços:
 2. No painel da Vercel, clique em **Add New... → Project**.
 3. Encontre o repositório **sistemapadaria** na lista e clique em **Import**.
 4. Antes de clicar em "Deploy", procure a seção **Environment Variables** (variáveis
-   de ambiente) e adicione as quatro abaixo, uma de cada vez (nome à esquerda, valor
+   de ambiente) e adicione as duas abaixo, uma de cada vez (nome à esquerda, valor
    à direita):
 
    | Nome | Valor |
    |---|---|
    | `DATABASE_URL` | a connection string que você copiou da Neon na Parte 1 |
    | `JWT_SECRET` | qualquer frase longa e aleatória, só sua — por exemplo: `padaria-2026-troque-por-outra-frase-bem-longa-e-secreta` |
-   | `ADMIN_LOGIN` | o login que você vai usar para entrar como administrador, ex: `admin` |
-   | `ADMIN_SENHA` | uma senha forte de verdade (não deixe a de exemplo) |
+
+   > Você **não** precisa definir login e senha de administrador aqui. Você vai criar
+   > essa conta na primeira vez que abrir o sistema (veja a Parte 3).
 
 5. Clique em **Deploy**. A Vercel vai instalar tudo, preparar o banco de dados
-   automaticamente (criar as tabelas e o usuário administrador) e publicar o
+   automaticamente (criar as tabelas e alguns produtos de exemplo) e publicar o
    sistema. Isso leva 1-3 minutos.
 6. Quando aparecer "Congratulations", clique no link/preview para abrir o sistema.
    A Vercel também te dá uma URL fixa (algo como `sistemapadaria.vercel.app`) — é
@@ -56,12 +57,16 @@ Você vai criar conta em dois serviços:
 ## Parte 3 — Primeiro acesso
 
 1. Abra a URL gerada pela Vercel.
-2. Faça login com o `ADMIN_LOGIN` e `ADMIN_SENHA` que você definiu no passo 4 da
-   Parte 2.
+2. Como ainda não existe nenhuma conta, o sistema abre automaticamente a tela de
+   **Primeiro acesso**. Preencha seu nome, escolha um login (ex: `admin`) e uma
+   senha, confirme a senha e clique em **Criar administrador e entrar**. Pronto —
+   você já entra como administrador.
+   > Guarde bem esse login e senha: é a conta que comanda o sistema.
 3. Vá em **Produtos** e cadastre os produtos reais da sua padaria (o sistema já
    vem com alguns produtos de exemplo — pode desativá-los ou deixar).
 4. Vá em **Usuários** e cadastre um login para cada atendente que vai operar o
-   caixa.
+   caixa. Aproveite para criar um **segundo administrador** de segurança (veja as
+   perguntas comuns abaixo).
 5. Pronto — o caixa já pode ser usado no PC do balcão.
 
 ---
@@ -86,12 +91,11 @@ Assim, se um administrador esquecer a senha, o outro consegue redefini-la pelo p
 
 **Esqueci a senha do administrador e não tenho um segundo admin, e agora?**
 Nesse caso a recuperação é mais trabalhosa, porque não há ninguém no sistema com
-permissão para redefinir. As opções são: (a) cadastrar um segundo admin **antes** de
-precisar (veja a dica acima — é a forma recomendada de se prevenir); ou (b) me chamar
-para um ajuste pontual no banco de dados. Observação importante: **mudar o valor de
-`ADMIN_SENHA` na Vercel e republicar NÃO redefine a senha de um admin que já existe** —
-essa variável só é usada para criar o primeiro administrador quando o sistema ainda
-não tem nenhum.
+permissão para redefinir. A forma recomendada de se prevenir é cadastrar um segundo
+admin **antes** de precisar (veja a dica acima). Se mesmo assim ficar trancado para
+fora, me chame para um ajuste pontual no banco de dados. Observação: a tela de
+**Primeiro acesso** só aparece enquanto o sistema não tem **nenhum** usuário — depois
+que a primeira conta é criada, ela fica desativada por segurança.
 
 **Como faço para atualizar o sistema no futuro (novas funcionalidades)?**
 Basta pedir as alterações — assim que o código for atualizado no repositório

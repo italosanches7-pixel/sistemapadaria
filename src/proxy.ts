@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { NOME_COOKIE_SESSAO, lerTokenSessao } from "@/lib/auth";
 
-const ROTAS_PUBLICAS = ["/login"];
+const ROTAS_PUBLICAS = ["/login", "/setup"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
