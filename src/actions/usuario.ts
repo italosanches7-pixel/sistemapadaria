@@ -37,3 +37,55 @@ export async function alternarUsuarioAtivo(usuarioId: string): Promise<void> {
   await prisma.usuario.update({ where: { id: usuarioId }, data: { ativo: !usuario.ativo } });
   revalidatePath("/admin/usuarios");
 }
+
+export type ResultadoUsuario = { sucesso: boolean; erro?: string };
+
+export async function redefinirSenhaUsuario(usuarioId: string, novaSenha: string): Promise<ResultadoUsuario> {
+  await exigirAdmin();
+
+  if (novaSenha.length < 6) {
+    return { sucesso: false, erro: "A nova senha deve ter ao menos 6 caracteres." };
+  }
+
+  const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+  if (!usuario) {
+    return { sucesso: false, erro: "Usuário não encontrado." };
+  }
+
+  const senhaHash = await gerarHashSenha(novaSenha);
+  await prisma.usuario.update({ where: { id: usuarioId }, data: { senhaHash } });
+
+  revalidatePath("/admin/usuarios");
+  return { sucesso: true };
+}
+
+export async function excluirUsuario(usuarioId: string): Promise<ResultadoUsuario> {
+  const sessao = await exigirAdmin();
+
+  if (usuarioId === sessao.usuarioId) {
+    return { sucesso: false, erro: "Você não pode excluir a própria conta." };
+  }
+
+  const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+  if (!usuario) {
+    return { sucesso: false, erro: "Usuário não encontrado." };
+  }
+
+  const [turnos, vendas, vendasCanceladas] = await Promise.all([
+    prisma.turno.count({ where: { operadorId: usuarioId } }),
+    prisma.venda.count({ where: { operadorId: usuarioId } }),
+    prisma.venda.count({ where: { canceladoPorId: usuarioId } }),
+  ]);
+
+  if (turnos > 0 || vendas > 0 || vendasCanceladas > 0) {
+    return {
+      sucesso: false,
+      erro: "Este usuário tem histórico de caixa e não pode ser excluído. Use 'Desativar' para impedir novos acessos preservando o histórico.",
+    };
+  }
+
+  await prisma.usuario.delete({ where: { id: usuarioId } });
+
+  revalidatePath("/admin/usuarios");
+  return { sucesso: true };
+}
