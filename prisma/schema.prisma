@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Papel {
+  ADMIN
+  OPERADOR
+}
+
+enum Categoria {
+  PAES
+  CONFEITARIA
+  SALGADOS
+  BEBIDAS
+  MERCEARIA
+}
+
+enum FormaPagamento {
+  DINHEIRO
+  PIX
+  DEBITO
+  CREDITO
+}
+
+enum StatusTurno {
+  ABERTO
+  FECHADO
+}
+
+enum StatusVenda {
+  CONCLUIDA
+  CANCELADA
+}
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nome      String
+  login     String   @unique
+  senhaHash String
+  papel     Papel    @default(OPERADOR)
+  ativo     Boolean  @default(true)
+  criadoEm  DateTime @default(now())
+
+  turnos           Turno[]
+  vendas           Venda[]           @relation("VendasDoOperador")
+  vendasCanceladas Venda[]           @relation("VendasCanceladasPor")
+
+  @@map("usuarios")
+}
+
+model Produto {
+  id        String    @id @default(cuid())
+  nome      String
+  preco     Decimal   @db.Decimal(10, 2)
+  categoria Categoria
+  ativo     Boolean   @default(true)
+  criadoEm  DateTime  @default(now())
+
+  itensVenda ItemVenda[]
+
+  @@map("produtos")
+}
+
+model Turno {
+  id              String      @id @default(cuid())
+  operadorId      String
+  operador        Usuario     @relation(fields: [operadorId], references: [id])
+  dataAbertura    DateTime    @default(now())
+  fundoTroco      Decimal     @db.Decimal(10, 2)
+  dataFechamento  DateTime?
+  valorContado    Decimal?    @db.Decimal(10, 2)
+  valorEsperado   Decimal?    @db.Decimal(10, 2)
+  status          StatusTurno @default(ABERTO)
+
+  vendas Venda[]
+
+  @@index([operadorId, status])
+  @@map("turnos")
+}
+
+model Venda {
+  id                  String         @id @default(cuid())
+  turnoId             String
+  turno               Turno          @relation(fields: [turnoId], references: [id])
+  operadorId          String
+  operador            Usuario        @relation("VendasDoOperador", fields: [operadorId], references: [id])
+  dataHora            DateTime       @default(now())
+  formaPagamento      FormaPagamento
+  valorTotal          Decimal        @db.Decimal(10, 2)
+  status              StatusVenda    @default(CONCLUIDA)
+  canceladoPorId      String?
+  canceladoPor        Usuario?       @relation("VendasCanceladasPor", fields: [canceladoPorId], references: [id])
+  canceladoEm         DateTime?
+  motivoCancelamento  String?
+
+  itens ItemVenda[]
+
+  @@index([dataHora])
+  @@index([turnoId])
+  @@map("vendas")
+}
+
+model ItemVenda {
+  id             String  @id @default(cuid())
+  vendaId        String
+  venda          Venda   @relation(fields: [vendaId], references: [id], onDelete: Cascade)
+  produtoId      String
+  produto        Produto @relation(fields: [produtoId], references: [id])
+  nomeProduto    String
+  quantidade     Int
+  precoUnitario  Decimal @db.Decimal(10, 2)
+
+  @@map("itens_venda")
+}
