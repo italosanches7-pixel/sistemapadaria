@@ -73,12 +73,25 @@ Não, os planos gratuitos da Neon e da Vercel cobrem tranquilamente o uso de uma
 padaria. Se um dia o negócio crescer muito, pode ser necessário migrar para um
 plano pago — mas isso está longe da realidade inicial.
 
-**Esqueci a senha do administrador, e agora?**
-Vá em **Vercel → seu projeto → Settings → Environment Variables**, altere o valor
-de `ADMIN_SENHA` para uma nova senha, e depois vá em **Deployments** e clique em
-**Redeploy** no último deploy. Isso só redefine a senha se o login de admin ainda
-não tiver sido usado para criar outro admin — caso já exista um administrador
-ativo, peça para ele redefinir sua senha, ou fale comigo para um ajuste pontual.
+**Um atendente esqueceu a senha, e agora?**
+Simples: entre como administrador, vá em **Usuários**, clique em **Redefinir senha**
+na linha do atendente, digite uma senha nova e clique em Salvar. Pronto — ele já
+pode entrar com a nova senha. Não precisa de e-mail nem de nada extra.
+
+**Dica de segurança: tenha um segundo administrador.**
+Logo no primeiro acesso, vá em **Usuários** e cadastre um segundo usuário com papel
+**Administrador** (pode ser você mesmo com outro login, ou uma pessoa de confiança).
+Assim, se um administrador esquecer a senha, o outro consegue redefini-la pelo painel
+— exatamente como no caso do atendente acima.
+
+**Esqueci a senha do administrador e não tenho um segundo admin, e agora?**
+Nesse caso a recuperação é mais trabalhosa, porque não há ninguém no sistema com
+permissão para redefinir. As opções são: (a) cadastrar um segundo admin **antes** de
+precisar (veja a dica acima — é a forma recomendada de se prevenir); ou (b) me chamar
+para um ajuste pontual no banco de dados. Observação importante: **mudar o valor de
+`ADMIN_SENHA` na Vercel e republicar NÃO redefine a senha de um admin que já existe** —
+essa variável só é usada para criar o primeiro administrador quando o sistema ainda
+não tem nenhum.
 
 **Como faço para atualizar o sistema no futuro (novas funcionalidades)?**
 Basta pedir as alterações — assim que o código for atualizado no repositório
