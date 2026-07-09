@@ -27,7 +27,7 @@ export default function AbrirCaixaPage() {
             required
             autoFocus
             defaultValue="0"
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-amber-600 focus:outline-none"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-brand-600 focus:outline-none"
           />
         </div>
 
@@ -36,7 +36,7 @@ export default function AbrirCaixaPage() {
         <button
           type="submit"
           disabled={pendente}
-          className="mt-2 rounded-md bg-amber-700 px-3 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-60"
+          className="mt-2 rounded-md bg-brand-700 px-3 py-2 font-medium text-white hover:bg-brand-800 disabled:opacity-60"
         >
           {pendente ? "Abrindo..." : "Abrir caixa"}
         </button>

@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+/* Identidade visual — Panificadora Pão Nobre (dourado/bronze) */
+@theme {
+  --color-brand-50: #faf6ea;
+  --color-brand-100: #f3e8c8;
+  --color-brand-200: #e8d398;
+  --color-brand-300: #dbb964;
+  --color-brand-400: #cfa23c;
+  --color-brand-500: #c08a1e;
+  --color-brand-600: #a5730f;
+  --color-brand-700: #895e0e;
+  --color-brand-800: #6e4a12;
+  --color-brand-900: #4e3410;
+}

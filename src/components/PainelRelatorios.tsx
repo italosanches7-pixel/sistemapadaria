@@ -65,7 +65,7 @@ export function PainelRelatorios() {
             onClick={() => selecionarAtalho(opcao.valor)}
             className={`rounded-md border px-3 py-1.5 text-sm font-medium ${
               periodo === opcao.valor
-                ? "border-amber-700 bg-amber-700 text-white"
+                ? "border-brand-700 bg-brand-700 text-white"
                 : "border-neutral-300 text-neutral-700 hover:bg-neutral-100"
             }`}
           >

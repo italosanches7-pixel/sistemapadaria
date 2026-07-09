@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { autenticarUsuario, type EstadoLogin } from "@/actions/auth";
+import { Marca } from "@/components/Marca";
 
 const estadoInicial: EstadoLogin = {};
 
@@ -9,8 +10,10 @@ export function FormularioLogin() {
   const [estado, formAction, pendente] = useActionState(autenticarUsuario, estadoInicial);
 
   return (
-    <div className="mx-auto mt-20 max-w-sm rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
-      <h1 className="mb-1 text-center text-2xl font-semibold text-amber-800">🥖 Padaria</h1>
+    <div className="mx-auto mt-20 max-w-sm rounded-xl border border-brand-100 bg-white p-6 shadow-sm">
+      <div className="mb-2 flex justify-center">
+        <Marca tamanho="lg" />
+      </div>
       <p className="mb-6 text-center text-sm text-neutral-500">Entre com seu usuário para abrir o caixa</p>
 
       <form action={formAction} className="flex flex-col gap-3">
@@ -24,7 +27,7 @@ export function FormularioLogin() {
             type="text"
             required
             autoFocus
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-amber-600 focus:outline-none"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-brand-600 focus:outline-none"
           />
         </div>
         <div>
@@ -36,7 +39,7 @@ export function FormularioLogin() {
             name="senha"
             type="password"
             required
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-amber-600 focus:outline-none"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-brand-600 focus:outline-none"
           />
         </div>
 
@@ -45,7 +48,7 @@ export function FormularioLogin() {
         <button
           type="submit"
           disabled={pendente}
-          className="mt-2 rounded-md bg-amber-700 px-3 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-60"
+          className="mt-2 rounded-md bg-brand-700 px-3 py-2 font-medium text-white hover:bg-brand-800 disabled:opacity-60"
         >
           {pendente ? "Entrando..." : "Entrar"}
         </button>

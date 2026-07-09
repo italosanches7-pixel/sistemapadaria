@@ -38,7 +38,7 @@ export default function FecharCaixaPage() {
         </p>
         <Link
           href="/caixa/abrir"
-          className="mt-6 block rounded-md bg-amber-700 px-3 py-2 text-center font-medium text-white hover:bg-amber-800"
+          className="mt-6 block rounded-md bg-brand-700 px-3 py-2 text-center font-medium text-white hover:bg-brand-800"
         >
           Abrir novo turno
         </Link>
@@ -64,7 +64,7 @@ export default function FecharCaixaPage() {
             min="0"
             required
             autoFocus
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-amber-600 focus:outline-none"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-brand-600 focus:outline-none"
           />
         </div>
 
@@ -73,7 +73,7 @@ export default function FecharCaixaPage() {
         <button
           type="submit"
           disabled={pendente}
-          className="mt-2 rounded-md bg-amber-700 px-3 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-60"
+          className="mt-2 rounded-md bg-brand-700 px-3 py-2 font-medium text-white hover:bg-brand-800 disabled:opacity-60"
         >
           {pendente ? "Fechando..." : "Fechar caixa"}
         </button>

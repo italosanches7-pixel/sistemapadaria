@@ -50,7 +50,7 @@ export function FormularioUsuario() {
       <button
         type="submit"
         disabled={pendente}
-        className="rounded-md bg-amber-700 px-3 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-60"
+        className="rounded-md bg-brand-700 px-3 py-2 font-medium text-white hover:bg-brand-800 disabled:opacity-60"
       >
         {pendente ? "Salvando..." : "Cadastrar usuário"}
       </button>

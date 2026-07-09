@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { criarPrimeiroAdmin, type EstadoSetup } from "@/actions/setup";
+import { Marca } from "@/components/Marca";
 
 const estadoInicial: EstadoSetup = {};
 
@@ -9,8 +10,11 @@ export function FormularioSetup() {
   const [estado, formAction, pendente] = useActionState(criarPrimeiroAdmin, estadoInicial);
 
   return (
-    <div className="mx-auto mt-16 max-w-sm rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
-      <h1 className="mb-1 text-center text-2xl font-semibold text-amber-800">🥖 Primeiro acesso</h1>
+    <div className="mx-auto mt-16 max-w-sm rounded-xl border border-brand-100 bg-white p-6 shadow-sm">
+      <div className="mb-2 flex justify-center">
+        <Marca tamanho="lg" />
+      </div>
+      <h1 className="mb-1 text-center text-lg font-semibold text-neutral-800">Primeiro acesso</h1>
       <p className="mb-6 text-center text-sm text-neutral-500">
         Crie a conta do administrador. Ela terá acesso total ao sistema.
       </p>
@@ -26,7 +30,7 @@ export function FormularioSetup() {
             type="text"
             required
             autoFocus
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-amber-600 focus:outline-none"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-brand-600 focus:outline-none"
           />
         </div>
         <div>
@@ -38,7 +42,7 @@ export function FormularioSetup() {
             name="login"
             type="text"
             required
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-amber-600 focus:outline-none"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-brand-600 focus:outline-none"
           />
         </div>
         <div>
@@ -51,7 +55,7 @@ export function FormularioSetup() {
             type="password"
             minLength={6}
             required
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-amber-600 focus:outline-none"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-brand-600 focus:outline-none"
           />
         </div>
         <div>
@@ -64,7 +68,7 @@ export function FormularioSetup() {
             type="password"
             minLength={6}
             required
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-amber-600 focus:outline-none"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-brand-600 focus:outline-none"
           />
         </div>
 
@@ -73,7 +77,7 @@ export function FormularioSetup() {
         <button
           type="submit"
           disabled={pendente}
-          className="mt-2 rounded-md bg-amber-700 px-3 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-60"
+          className="mt-2 rounded-md bg-brand-700 px-3 py-2 font-medium text-white hover:bg-brand-800 disabled:opacity-60"
         >
           {pendente ? "Criando..." : "Criar administrador e entrar"}
         </button>

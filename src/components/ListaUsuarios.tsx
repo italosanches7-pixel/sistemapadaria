@@ -84,7 +84,7 @@ export function ListaUsuarios({ usuarios, usuarioAtualId }: { usuarios: Usuario[
                     <button
                       disabled={pendente}
                       onClick={() => confirmarReset(usuario.id)}
-                      className="rounded-md bg-amber-700 px-2 py-1 text-xs text-white hover:bg-amber-800"
+                      className="rounded-md bg-brand-700 px-2 py-1 text-xs text-white hover:bg-brand-800"
                     >
                       Salvar
                     </button>
