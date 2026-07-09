@@ -1,15 +1,24 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { cadastrarUsuario, type EstadoUsuario } from "@/actions/usuario";
 
 const estadoInicial: EstadoUsuario = {};
 
 export function FormularioUsuario() {
   const [estado, formAction, pendente] = useActionState(cadastrarUsuario, estadoInicial);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (estado.ok) formRef.current?.reset();
+  }, [estado.ok]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+    <form
+      ref={formRef}
+      action={formAction}
+      className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm"
+    >
       <div>
         <label className="mb-1 block text-sm font-medium text-neutral-700" htmlFor="nome">
           Nome
@@ -46,6 +55,7 @@ export function FormularioUsuario() {
       </div>
 
       {estado.erro && <p className="text-sm text-red-600">{estado.erro}</p>}
+      {estado.ok && <p className="text-sm text-green-700">Usuário cadastrado com sucesso.</p>}
 
       <button
         type="submit"

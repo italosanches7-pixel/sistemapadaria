@@ -6,7 +6,7 @@ import { gerarHashSenha } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import type { Papel } from "@prisma/client";
 
-export type EstadoUsuario = { erro?: string };
+export type EstadoUsuario = { erro?: string; ok?: boolean };
 
 export async function cadastrarUsuario(_estado: EstadoUsuario, formData: FormData): Promise<EstadoUsuario> {
   await exigirAdmin();
@@ -23,10 +23,14 @@ export async function cadastrarUsuario(_estado: EstadoUsuario, formData: FormDat
   if (existente) return { erro: "Já existe um usuário com este login." };
 
   const senhaHash = await gerarHashSenha(senha);
-  await prisma.usuario.create({ data: { nome, login, senhaHash, papel } });
+  try {
+    await prisma.usuario.create({ data: { nome, login, senhaHash, papel } });
+  } catch {
+    return { erro: "Não foi possível salvar o usuário. Tente novamente." };
+  }
 
   revalidatePath("/admin/usuarios");
-  return {};
+  return { ok: true };
 }
 
 export async function alternarUsuarioAtivo(usuarioId: string): Promise<void> {
