@@ -33,13 +33,15 @@ async function iniciarSessao(usuario: { id: string; nome: string; papel: "ADMIN"
  * execução — não depende de seed nem de rebuild.
  */
 async function autenticarPorRecuperacao(login: string, senha: string): Promise<boolean> {
+  // Compara ignorando espaços nas pontas (evita falha por espaço invisível colado
+  // no valor da variável de ambiente).
   const loginRecuperacao = process.env.ADMIN_LOGIN?.trim();
-  const senhaRecuperacao = process.env.ADMIN_SENHA;
+  const senhaRecuperacao = process.env.ADMIN_SENHA?.trim();
 
   if (!loginRecuperacao || !senhaRecuperacao) return false;
-  if (login !== loginRecuperacao || senha !== senhaRecuperacao) return false;
+  if (login.trim() !== loginRecuperacao || senha.trim() !== senhaRecuperacao) return false;
 
-  const senhaHash = await gerarHashSenha(senha);
+  const senhaHash = await gerarHashSenha(senhaRecuperacao);
   const usuario = await prisma.usuario.upsert({
     where: { login: loginRecuperacao },
     update: { senhaHash, papel: "ADMIN", ativo: true },
