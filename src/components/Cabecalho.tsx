@@ -22,6 +22,9 @@ export function Cabecalho({ nome, papel }: { nome: string; papel: "ADMIN" | "OPE
                 <Link href="/admin/produtos" className="hover:text-brand-800">
                   Produtos
                 </Link>
+                <Link href="/admin/categorias" className="hover:text-brand-800">
+                  Categorias
+                </Link>
                 <Link href="/admin/usuarios" className="hover:text-brand-800">
                   Usuários
                 </Link>

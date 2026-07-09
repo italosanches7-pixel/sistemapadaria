@@ -26,21 +26,28 @@ async function main() {
     console.log("ADMIN_LOGIN/ADMIN_SENHA não definidos — o admin será criado pela tela de Primeiro acesso.");
   }
 
+  // Garante as categorias padrão (idempotente).
+  const categoriasPadrao = ["Pães", "Confeitaria", "Salgados", "Bebidas", "Mercearia"];
+  for (const nome of categoriasPadrao) {
+    await prisma.categoria.upsert({ where: { nome }, update: {}, create: { nome } });
+  }
+  console.log("Categorias padrão garantidas.");
+
   const totalProdutos = await prisma.produto.count();
   if (totalProdutos === 0) {
     await prisma.produto.createMany({
       data: [
-        { nome: "Pão Francês (kg)", preco: 14.9, categoria: "PAES" },
-        { nome: "Pão de Queijo (un)", preco: 4.5, categoria: "PAES" },
-        { nome: "Croissant", preco: 8.9, categoria: "CONFEITARIA" },
-        { nome: "Bolo de Chocolate (fatia)", preco: 9.5, categoria: "CONFEITARIA" },
-        { nome: "Sonho", preco: 6.0, categoria: "CONFEITARIA" },
-        { nome: "Coxinha", preco: 7.5, categoria: "SALGADOS" },
-        { nome: "Esfiha", preco: 6.5, categoria: "SALGADOS" },
-        { nome: "Café Expresso", preco: 5.0, categoria: "BEBIDAS" },
-        { nome: "Suco Natural", preco: 8.0, categoria: "BEBIDAS" },
-        { nome: "Refrigerante Lata", preco: 6.0, categoria: "BEBIDAS" },
-        { nome: "Leite Integral (litro)", preco: 6.5, categoria: "MERCEARIA" },
+        { nome: "Pão Francês (kg)", preco: 14.9, categoria: "Pães" },
+        { nome: "Pão de Queijo (un)", preco: 4.5, categoria: "Pães" },
+        { nome: "Croissant", preco: 8.9, categoria: "Confeitaria" },
+        { nome: "Bolo de Chocolate (fatia)", preco: 9.5, categoria: "Confeitaria" },
+        { nome: "Sonho", preco: 6.0, categoria: "Confeitaria" },
+        { nome: "Coxinha", preco: 7.5, categoria: "Salgados" },
+        { nome: "Esfiha", preco: 6.5, categoria: "Salgados" },
+        { nome: "Café Expresso", preco: 5.0, categoria: "Bebidas" },
+        { nome: "Suco Natural", preco: 8.0, categoria: "Bebidas" },
+        { nome: "Refrigerante Lata", preco: 6.0, categoria: "Bebidas" },
+        { nome: "Leite Integral (litro)", preco: 6.5, categoria: "Mercearia" },
       ],
     });
     console.log("Produtos de exemplo cadastrados.");

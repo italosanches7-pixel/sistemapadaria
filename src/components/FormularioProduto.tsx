@@ -1,33 +1,29 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { cadastrarProduto, type EstadoProduto } from "@/actions/produto";
 
 const estadoInicial: EstadoProduto = {};
 
-const CATEGORIAS = [
-  { valor: "PAES", rotulo: "Pães" },
-  { valor: "CONFEITARIA", rotulo: "Confeitaria" },
-  { valor: "SALGADOS", rotulo: "Salgados" },
-  { valor: "BEBIDAS", rotulo: "Bebidas" },
-  { valor: "MERCEARIA", rotulo: "Mercearia" },
-];
-
-export function FormularioProduto() {
+export function FormularioProduto({ categorias }: { categorias: string[] }) {
   const [estado, formAction, pendente] = useActionState(cadastrarProduto, estadoInicial);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (estado.ok) formRef.current?.reset();
+  }, [estado.ok]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+    <form
+      ref={formRef}
+      action={formAction}
+      className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm"
+    >
       <div>
         <label className="mb-1 block text-sm font-medium text-neutral-700" htmlFor="nome">
           Nome
         </label>
-        <input
-          id="nome"
-          name="nome"
-          required
-          className="w-full rounded-md border border-neutral-300 px-3 py-2"
-        />
+        <input id="nome" name="nome" required className="w-full rounded-md border border-neutral-300 px-3 py-2" />
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium text-neutral-700" htmlFor="preco">
@@ -47,16 +43,17 @@ export function FormularioProduto() {
         <label className="mb-1 block text-sm font-medium text-neutral-700" htmlFor="categoria">
           Categoria
         </label>
-        <select id="categoria" name="categoria" className="w-full rounded-md border border-neutral-300 px-3 py-2">
-          {CATEGORIAS.map((c) => (
-            <option key={c.valor} value={c.valor}>
-              {c.rotulo}
+        <select id="categoria" name="categoria" required className="w-full rounded-md border border-neutral-300 px-3 py-2">
+          {categorias.map((c) => (
+            <option key={c} value={c}>
+              {c}
             </option>
           ))}
         </select>
       </div>
 
       {estado.erro && <p className="text-sm text-red-600">{estado.erro}</p>}
+      {estado.ok && <p className="text-sm text-green-700">Produto cadastrado com sucesso.</p>}
 
       <button
         type="submit"

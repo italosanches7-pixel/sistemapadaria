@@ -6,14 +6,6 @@ import { registrarVenda } from "@/actions/venda";
 type Produto = { id: string; nome: string; preco: number; categoria: string };
 type ItemCarrinho = { produtoId: string; nome: string; preco: number; quantidade: number };
 
-const ROTULOS_CATEGORIA: Record<string, string> = {
-  PAES: "Pães",
-  CONFEITARIA: "Confeitaria",
-  SALGADOS: "Salgados",
-  BEBIDAS: "Bebidas",
-  MERCEARIA: "Mercearia",
-};
-
 const FORMAS_PAGAMENTO = [
   { valor: "DINHEIRO", rotulo: "Dinheiro" },
   { valor: "PIX", rotulo: "Pix" },
@@ -87,7 +79,7 @@ export function PainelCaixa({ produtos }: { produtos: Produto[] }) {
         {Array.from(produtosPorCategoria.entries()).map(([categoria, itens]) => (
           <div key={categoria} className="mb-5">
             <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-              {ROTULOS_CATEGORIA[categoria] ?? categoria}
+              {categoria}
             </h2>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {itens.map((produto) => (

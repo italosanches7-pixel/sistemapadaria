@@ -12,14 +12,6 @@ enum Papel {
   OPERADOR
 }
 
-enum Categoria {
-  PAES
-  CONFEITARIA
-  SALGADOS
-  BEBIDAS
-  MERCEARIA
-}
-
 enum FormaPagamento {
   DINHEIRO
   PIX
@@ -57,13 +49,22 @@ model Produto {
   id        String    @id @default(cuid())
   nome      String
   preco     Decimal   @db.Decimal(10, 2)
-  categoria Categoria
+  categoria String
   ativo     Boolean   @default(true)
   criadoEm  DateTime  @default(now())
 
   itensVenda ItemVenda[]
 
   @@map("produtos")
+}
+
+model Categoria {
+  id       String   @id @default(cuid())
+  nome     String   @unique
+  ativo    Boolean  @default(true)
+  criadoEm DateTime @default(now())
+
+  @@map("categorias")
 }
 
 model Turno {

@@ -2,33 +2,20 @@
 
 import { useState, useTransition } from "react";
 import { alternarProdutoAtivo, editarProduto, excluirProduto } from "@/actions/produto";
-import type { Categoria } from "@prisma/client";
 
 type Produto = { id: string; nome: string; preco: number; categoria: string; ativo: boolean };
-
-const CATEGORIAS = [
-  { valor: "PAES", rotulo: "Pães" },
-  { valor: "CONFEITARIA", rotulo: "Confeitaria" },
-  { valor: "SALGADOS", rotulo: "Salgados" },
-  { valor: "BEBIDAS", rotulo: "Bebidas" },
-  { valor: "MERCEARIA", rotulo: "Mercearia" },
-];
-
-const ROTULOS_CATEGORIA: Record<string, string> = Object.fromEntries(
-  CATEGORIAS.map((c) => [c.valor, c.rotulo])
-);
 
 function formatarMoeda(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-export function ListaProdutos({ produtos }: { produtos: Produto[] }) {
+export function ListaProdutos({ produtos, categorias }: { produtos: Produto[]; categorias: string[] }) {
   const [pendente, iniciarTransicao] = useTransition();
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [rascunho, setRascunho] = useState<{ nome: string; preco: string; categoria: string }>({
     nome: "",
     preco: "",
-    categoria: "PAES",
+    categoria: categorias[0] ?? "",
   });
   const [mensagem, setMensagem] = useState<{ tipo: "sucesso" | "erro"; texto: string } | null>(null);
 
@@ -44,7 +31,7 @@ export function ListaProdutos({ produtos }: { produtos: Produto[] }) {
       const resultado = await editarProduto(produtoId, {
         nome: rascunho.nome,
         preco: Number(rascunho.preco),
-        categoria: rascunho.categoria as Categoria,
+        categoria: rascunho.categoria,
       });
       if (resultado.sucesso) {
         setEditandoId(null);
@@ -103,9 +90,12 @@ export function ListaProdutos({ produtos }: { produtos: Produto[] }) {
                     onChange={(e) => setRascunho((r) => ({ ...r, categoria: e.target.value }))}
                     className="w-full rounded-md border border-neutral-300 px-2 py-1"
                   >
-                    {CATEGORIAS.map((c) => (
-                      <option key={c.valor} value={c.valor}>
-                        {c.rotulo}
+                    {(categorias.includes(rascunho.categoria)
+                      ? categorias
+                      : [rascunho.categoria, ...categorias]
+                    ).map((c) => (
+                      <option key={c} value={c}>
+                        {c}
                       </option>
                     ))}
                   </select>
@@ -142,7 +132,7 @@ export function ListaProdutos({ produtos }: { produtos: Produto[] }) {
             ) : (
               <tr key={produto.id} className="border-b border-neutral-100">
                 <td className="py-1.5">{produto.nome}</td>
-                <td className="py-1.5 text-neutral-500">{ROTULOS_CATEGORIA[produto.categoria] ?? produto.categoria}</td>
+                <td className="py-1.5 text-neutral-500">{produto.categoria}</td>
                 <td className="py-1.5">{formatarMoeda(produto.preco)}</td>
                 <td className="py-1.5">
                   <span className={produto.ativo ? "text-green-700" : "text-neutral-400"}>
