@@ -89,13 +89,26 @@ Logo no primeiro acesso, vá em **Usuários** e cadastre um segundo usuário com
 Assim, se um administrador esquecer a senha, o outro consegue redefini-la pelo painel
 — exatamente como no caso do atendente acima.
 
-**Esqueci a senha do administrador e não tenho um segundo admin, e agora?**
-Nesse caso a recuperação é mais trabalhosa, porque não há ninguém no sistema com
-permissão para redefinir. A forma recomendada de se prevenir é cadastrar um segundo
-admin **antes** de precisar (veja a dica acima). Se mesmo assim ficar trancado para
-fora, me chame para um ajuste pontual no banco de dados. Observação: a tela de
-**Primeiro acesso** só aparece enquanto o sistema não tem **nenhum** usuário — depois
-que a primeira conta é criada, ela fica desativada por segurança.
+**Esqueci a senha do administrador (ou o primeiro acesso não abre), e agora?**
+Existe uma alavanca de recuperação que você mesmo aciona pela Vercel:
+
+1. Vá em **Vercel → seu projeto → Settings → Environment Variables** e adicione (ou
+   ajuste) estas duas:
+   | Nome | Valor |
+   |---|---|
+   | `ADMIN_LOGIN` | o login de administrador que você quer, ex: `admin` |
+   | `ADMIN_SENHA` | a nova senha que você quer para esse admin |
+2. Vá em **Deployments**, abra o deploy mais recente e clique em **Redeploy**.
+3. Quando terminar, entre com esse `ADMIN_LOGIN` e `ADMIN_SENHA`.
+
+A cada publicação com essas variáveis definidas, o sistema **garante** um admin com
+esse login e senha — cria se não existir, ou **redefine a senha** se já existir. Depois
+que recuperar o acesso, você pode remover essas variáveis se quiser (a conta continua
+existindo normalmente).
+
+> A tela de **Primeiro acesso** só aparece enquanto o sistema não tem **nenhum**
+> usuário. Depois que existe pelo menos uma conta, o caminho de recuperação é o acima.
+> Mesmo assim, a dica de prevenção continua valendo: tenha um segundo administrador.
 
 **Como faço para atualizar o sistema no futuro (novas funcionalidades)?**
 Basta pedir as alterações — assim que o código for atualizado no repositório

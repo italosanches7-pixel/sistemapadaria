@@ -1,11 +1,31 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-// O administrador NÃO é criado aqui. Ele é criado pela tela de "Primeiro acesso"
-// (/setup) diretamente no navegador, na primeira vez que o sistema é aberto.
-// Este seed cuida apenas de deixar alguns produtos de exemplo cadastrados.
+// Criação/recuperação do administrador:
+// - Se NÃO houver ADMIN_LOGIN/ADMIN_SENHA definidos, o admin é criado pela tela de
+//   "Primeiro acesso" (/setup) no navegador, na primeira vez que o sistema é aberto.
+// - Se ESSAS variáveis estiverem definidas, este seed GARANTE um admin com esse login
+//   e senha a cada publicação — criando se não existir, ou REDEFININDO a senha se já
+//   existir. É a alavanca de recuperação de acesso (basta ajustar as variáveis e
+//   republicar). Também cadastra alguns produtos de exemplo em bancos vazios.
 async function main() {
+  const loginAdmin = process.env.ADMIN_LOGIN?.trim();
+  const senhaAdmin = process.env.ADMIN_SENHA;
+
+  if (loginAdmin && senhaAdmin) {
+    const senhaHash = await bcrypt.hash(senhaAdmin, 10);
+    await prisma.usuario.upsert({
+      where: { login: loginAdmin },
+      update: { senhaHash, papel: "ADMIN", ativo: true },
+      create: { nome: "Administrador", login: loginAdmin, senhaHash, papel: "ADMIN" },
+    });
+    console.log(`Administrador garantido (login: ${loginAdmin}); senha (re)definida a partir de ADMIN_SENHA.`);
+  } else {
+    console.log("ADMIN_LOGIN/ADMIN_SENHA não definidos — o admin será criado pela tela de Primeiro acesso.");
+  }
+
   const totalProdutos = await prisma.produto.count();
   if (totalProdutos === 0) {
     await prisma.produto.createMany({
