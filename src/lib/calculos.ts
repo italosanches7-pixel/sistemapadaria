@@ -16,7 +16,7 @@ export function calcularDiferencaFechamento(valorContado: number, valorEsperado:
   return Math.round((valorContado - valorEsperado) * 100) / 100;
 }
 
-export type PagamentoEntrada = { valor: number };
+export type PagamentoEntrada = { valor: number; formaPagamento?: string };
 
 export function somarPagamentos(pagamentos: PagamentoEntrada[]): number {
   const soma = pagamentos.reduce((acc, p) => acc + p.valor, 0);
@@ -25,13 +25,18 @@ export function somarPagamentos(pagamentos: PagamentoEntrada[]): number {
 
 /**
  * Valida a lista de pagamentos de uma venda: precisa ter ao menos um, todos com
- * valor positivo, e a soma precisa bater com o total da venda (tolerância de
- * meio centavo para arredondamentos). Retorna a mensagem de erro, ou null se ok.
+ * valor positivo, sem repetir a mesma forma de pagamento, e a soma precisa bater
+ * com o total da venda (tolerância de meio centavo para arredondamentos).
+ * Retorna a mensagem de erro, ou null se ok.
  */
 export function validarPagamentos(pagamentos: PagamentoEntrada[], totalVenda: number): string | null {
   if (!pagamentos.length) return "Informe ao menos uma forma de pagamento.";
   if (pagamentos.some((p) => Number.isNaN(p.valor) || p.valor <= 0)) {
     return "Cada pagamento deve ter um valor maior que zero.";
+  }
+  const formas = pagamentos.map((p) => p.formaPagamento).filter(Boolean);
+  if (new Set(formas).size !== formas.length) {
+    return "Não repita a mesma forma de pagamento — some os valores em uma linha só.";
   }
   const soma = somarPagamentos(pagamentos);
   if (Math.abs(soma - totalVenda) > 0.005) {

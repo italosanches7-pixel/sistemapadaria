@@ -246,14 +246,23 @@ export function PainelCaixa({ produtos }: { produtos: Produto[] }) {
         ) : (
           <div className="mb-3">
             <div className="flex flex-col gap-1.5">
-              {linhasPagamento.map((linha, indice) => (
+              {linhasPagamento.map((linha, indice) => {
+                // Cada linha só oferece formas ainda não usadas nas demais,
+                // impedindo repetir a mesma forma de pagamento.
+                const usadasEmOutras = new Set(
+                  linhasPagamento.filter((_, i) => i !== indice).map((l) => l.forma)
+                );
+                const opcoesDisponiveis = FORMAS_PAGAMENTO.filter(
+                  (forma) => forma.valor === linha.forma || !usadasEmOutras.has(forma.valor)
+                );
+                return (
                 <div key={indice} className="flex items-center gap-1.5">
                   <select
                     value={linha.forma}
                     onChange={(e) => alterarLinhaPagamento(indice, { forma: e.target.value as FormaPagamento })}
                     className="flex-1 rounded-md border border-neutral-300 px-2 py-1.5 text-sm"
                   >
-                    {FORMAS_PAGAMENTO.map((forma) => (
+                    {opcoesDisponiveis.map((forma) => (
                       <option key={forma.valor} value={forma.valor}>
                         {forma.rotulo}
                       </option>
@@ -279,16 +288,19 @@ export function PainelCaixa({ produtos }: { produtos: Produto[] }) {
                     </button>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
 
-            <button
-              type="button"
-              onClick={adicionarLinhaPagamento}
-              className="mt-1.5 text-sm font-medium text-brand-700 hover:underline"
-            >
-              + Adicionar forma de pagamento
-            </button>
+            {linhasPagamento.length < FORMAS_PAGAMENTO.length && (
+              <button
+                type="button"
+                onClick={adicionarLinhaPagamento}
+                className="mt-1.5 text-sm font-medium text-brand-700 hover:underline"
+              >
+                + Adicionar forma de pagamento
+              </button>
+            )}
 
             <p
               className={`mt-1.5 text-sm font-medium ${

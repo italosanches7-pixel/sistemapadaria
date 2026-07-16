@@ -36,4 +36,28 @@ describe("validarPagamentos", () => {
   it("tolera diferença de arredondamento de meio centavo", () => {
     expect(validarPagamentos([{ valor: 11.335 }, { valor: 22.465 }], 33.8)).toBeNull();
   });
+
+  it("rejeita a mesma forma de pagamento repetida", () => {
+    expect(
+      validarPagamentos(
+        [
+          { valor: 10, formaPagamento: "DINHEIRO" },
+          { valor: 23.8, formaPagamento: "DINHEIRO" },
+        ],
+        33.8
+      )
+    ).toMatch(/Não repita/);
+  });
+
+  it("aceita formas diferentes", () => {
+    expect(
+      validarPagamentos(
+        [
+          { valor: 10, formaPagamento: "DINHEIRO" },
+          { valor: 23.8, formaPagamento: "PIX" },
+        ],
+        33.8
+      )
+    ).toBeNull();
+  });
 });
