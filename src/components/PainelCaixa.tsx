@@ -13,13 +13,22 @@ const FORMAS_PAGAMENTO = [
   { valor: "CREDITO", rotulo: "Crédito" },
 ] as const;
 
+type FormaPagamento = (typeof FORMAS_PAGAMENTO)[number]["valor"];
+type LinhaPagamento = { forma: FormaPagamento; valor: string };
+
 function formatarMoeda(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function arredondar(valor: number) {
+  return Math.round(valor * 100) / 100;
+}
+
 export function PainelCaixa({ produtos }: { produtos: Produto[] }) {
   const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
-  const [formaPagamento, setFormaPagamento] = useState<(typeof FORMAS_PAGAMENTO)[number]["valor"]>("DINHEIRO");
+  const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>("DINHEIRO");
+  const [dividido, setDividido] = useState(false);
+  const [linhasPagamento, setLinhasPagamento] = useState<LinhaPagamento[]>([]);
   const [mensagem, setMensagem] = useState<{ tipo: "sucesso" | "erro"; texto: string } | null>(null);
   const [pendente, iniciarTransicao] = useTransition();
 
@@ -33,7 +42,15 @@ export function PainelCaixa({ produtos }: { produtos: Produto[] }) {
     return grupos;
   }, [produtos]);
 
-  const total = carrinho.reduce((soma, item) => soma + item.preco * item.quantidade, 0);
+  const total = arredondar(carrinho.reduce((soma, item) => soma + item.preco * item.quantidade, 0));
+
+  const somaPagamentos = arredondar(
+    linhasPagamento.reduce((soma, linha) => soma + (Number(linha.valor) || 0), 0)
+  );
+  const restante = arredondar(total - somaPagamentos);
+  const pagamentosConferem = dividido
+    ? Math.abs(restante) < 0.005 && linhasPagamento.every((l) => Number(l.valor) > 0)
+    : true;
 
   function adicionarAoCarrinho(produto: Produto) {
     setMensagem(null);
@@ -56,17 +73,54 @@ export function PainelCaixa({ produtos }: { produtos: Produto[] }) {
     );
   }
 
+  function iniciarDivisao() {
+    setMensagem(null);
+    setDividido(true);
+    // Começa com a forma já selecionada e o valor total; o operador ajusta e
+    // adiciona as demais partes.
+    setLinhasPagamento([{ forma: formaPagamento, valor: total > 0 ? String(total) : "" }]);
+  }
+
+  function cancelarDivisao() {
+    setDividido(false);
+    setLinhasPagamento([]);
+  }
+
+  function adicionarLinhaPagamento() {
+    setLinhasPagamento((atual) => {
+      const usadas = new Set(atual.map((l) => l.forma));
+      const proximaForma = FORMAS_PAGAMENTO.find((f) => !usadas.has(f.valor))?.valor ?? "DINHEIRO";
+      const faltante = arredondar(total - atual.reduce((s, l) => s + (Number(l.valor) || 0), 0));
+      return [...atual, { forma: proximaForma, valor: faltante > 0 ? String(faltante) : "" }];
+    });
+  }
+
+  function alterarLinhaPagamento(indice: number, mudanca: Partial<LinhaPagamento>) {
+    setLinhasPagamento((atual) => atual.map((linha, i) => (i === indice ? { ...linha, ...mudanca } : linha)));
+  }
+
+  function removerLinhaPagamento(indice: number) {
+    setLinhasPagamento((atual) => atual.filter((_, i) => i !== indice));
+  }
+
   function finalizarVenda() {
     if (!carrinho.length) return;
     setMensagem(null);
+
+    const pagamentos = dividido
+      ? linhasPagamento.map((linha) => ({ formaPagamento: linha.forma, valor: Number(linha.valor) || 0 }))
+      : [{ formaPagamento: formaPagamento, valor: total }];
+
     iniciarTransicao(async () => {
       const resultado = await registrarVenda(
         carrinho.map((item) => ({ produtoId: item.produtoId, quantidade: item.quantidade })),
-        formaPagamento
+        pagamentos
       );
       if (resultado.sucesso) {
         setMensagem({ tipo: "sucesso", texto: "Venda registrada com sucesso!" });
         setCarrinho([]);
+        setDividido(false);
+        setLinhasPagamento([]);
       } else {
         setMensagem({ tipo: "erro", texto: resultado.erro ?? "Não foi possível registrar a venda." });
       }
@@ -140,18 +194,100 @@ export function PainelCaixa({ produtos }: { produtos: Produto[] }) {
           <span>{formatarMoeda(total)}</span>
         </div>
 
-        <label className="mb-1 block text-sm font-medium text-neutral-700">Forma de pagamento</label>
-        <select
-          value={formaPagamento}
-          onChange={(e) => setFormaPagamento(e.target.value as typeof formaPagamento)}
-          className="mb-3 w-full rounded-md border border-neutral-300 px-3 py-2"
-        >
-          {FORMAS_PAGAMENTO.map((forma) => (
-            <option key={forma.valor} value={forma.valor}>
-              {forma.rotulo}
-            </option>
-          ))}
-        </select>
+        {!dividido ? (
+          <>
+            <label className="mb-1 block text-sm font-medium text-neutral-700">Forma de pagamento</label>
+            <select
+              value={formaPagamento}
+              onChange={(e) => setFormaPagamento(e.target.value as FormaPagamento)}
+              className="mb-1 w-full rounded-md border border-neutral-300 px-3 py-2"
+            >
+              {FORMAS_PAGAMENTO.map((forma) => (
+                <option key={forma.valor} value={forma.valor}>
+                  {forma.rotulo}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={iniciarDivisao}
+              disabled={carrinho.length === 0}
+              className="mb-3 text-left text-sm font-medium text-brand-700 hover:underline disabled:opacity-50"
+            >
+              Dividir pagamento (ex.: parte no Pix, parte em dinheiro)
+            </button>
+          </>
+        ) : (
+          <div className="mb-3">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-sm font-medium text-neutral-700">Pagamento dividido</span>
+              <button
+                type="button"
+                onClick={cancelarDivisao}
+                className="text-xs font-medium text-neutral-500 hover:underline"
+              >
+                Usar uma forma só
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              {linhasPagamento.map((linha, indice) => (
+                <div key={indice} className="flex items-center gap-1.5">
+                  <select
+                    value={linha.forma}
+                    onChange={(e) => alterarLinhaPagamento(indice, { forma: e.target.value as FormaPagamento })}
+                    className="flex-1 rounded-md border border-neutral-300 px-2 py-1.5 text-sm"
+                  >
+                    {FORMAS_PAGAMENTO.map((forma) => (
+                      <option key={forma.valor} value={forma.valor}>
+                        {forma.rotulo}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="R$"
+                    value={linha.valor}
+                    onChange={(e) => alterarLinhaPagamento(indice, { valor: e.target.value })}
+                    className="w-24 rounded-md border border-neutral-300 px-2 py-1.5 text-sm"
+                  />
+                  {linhasPagamento.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removerLinhaPagamento(indice)}
+                      aria-label="Remover pagamento"
+                      className="h-7 w-7 rounded border border-neutral-300 text-neutral-500 hover:bg-neutral-100"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={adicionarLinhaPagamento}
+              className="mt-1.5 text-sm font-medium text-brand-700 hover:underline"
+            >
+              + Adicionar forma de pagamento
+            </button>
+
+            <p
+              className={`mt-1.5 text-sm font-medium ${
+                pagamentosConferem ? "text-green-700" : "text-red-600"
+              }`}
+            >
+              {pagamentosConferem
+                ? "✓ Os pagamentos somam o total."
+                : restante > 0
+                  ? `Falta ${formatarMoeda(restante)}`
+                  : `Passou ${formatarMoeda(Math.abs(restante))}`}
+            </p>
+          </div>
+        )}
 
         {mensagem && (
           <p className={`mb-3 text-sm ${mensagem.tipo === "sucesso" ? "text-green-700" : "text-red-600"}`}>
@@ -161,7 +297,7 @@ export function PainelCaixa({ produtos }: { produtos: Produto[] }) {
 
         <button
           onClick={finalizarVenda}
-          disabled={pendente || carrinho.length === 0}
+          disabled={pendente || carrinho.length === 0 || !pagamentosConferem}
           className="w-full rounded-md bg-brand-700 px-3 py-2 font-medium text-white hover:bg-brand-800 disabled:opacity-60"
         >
           {pendente ? "Registrando..." : "Finalizar venda"}

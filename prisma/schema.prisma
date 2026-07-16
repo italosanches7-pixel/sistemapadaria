@@ -72,7 +72,8 @@ model Turno {
   operadorId      String
   operador        Usuario     @relation(fields: [operadorId], references: [id])
   dataAbertura    DateTime    @default(now())
-  fundoTroco      Decimal     @db.Decimal(10, 2)
+  // Mantido por histórico (turnos antigos); novos turnos abrem sempre com 0.
+  fundoTroco      Decimal     @default(0) @db.Decimal(10, 2)
   dataFechamento  DateTime?
   valorContado    Decimal?    @db.Decimal(10, 2)
   valorEsperado   Decimal?    @db.Decimal(10, 2)
@@ -91,7 +92,6 @@ model Venda {
   operadorId          String
   operador            Usuario        @relation("VendasDoOperador", fields: [operadorId], references: [id])
   dataHora            DateTime       @default(now())
-  formaPagamento      FormaPagamento
   valorTotal          Decimal        @db.Decimal(10, 2)
   status              StatusVenda    @default(CONCLUIDA)
   canceladoPorId      String?
@@ -99,11 +99,23 @@ model Venda {
   canceladoEm         DateTime?
   motivoCancelamento  String?
 
-  itens ItemVenda[]
+  itens      ItemVenda[]
+  pagamentos PagamentoVenda[]
 
   @@index([dataHora])
   @@index([turnoId])
   @@map("vendas")
+}
+
+model PagamentoVenda {
+  id             String         @id @default(cuid())
+  vendaId        String
+  venda          Venda          @relation(fields: [vendaId], references: [id], onDelete: Cascade)
+  formaPagamento FormaPagamento
+  valor          Decimal        @db.Decimal(10, 2)
+
+  @@index([vendaId])
+  @@map("pagamentos_venda")
 }
 
 model ItemVenda {

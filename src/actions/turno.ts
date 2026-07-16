@@ -15,25 +15,23 @@ export async function obterTurnoAbertoDoOperador(operadorId: string) {
   });
 }
 
-export async function abrirTurno(_estado: EstadoAbrirTurno, formData: FormData): Promise<EstadoAbrirTurno> {
+export async function abrirTurno(_estado: EstadoAbrirTurno, _formData: FormData): Promise<EstadoAbrirTurno> {
   const sessao = await exigirSessao();
-  const fundoTroco = Number(formData.get("fundoTroco"));
-
-  if (Number.isNaN(fundoTroco) || fundoTroco < 0) {
-    return { erro: "Informe um valor de fundo de troco válido." };
-  }
 
   const turnoExistente = await obterTurnoAbertoDoOperador(sessao.usuarioId);
   if (turnoExistente) {
     redirect("/caixa");
   }
 
-  await prisma.turno.create({
-    data: {
-      operadorId: sessao.usuarioId,
-      fundoTroco,
-    },
-  });
+  try {
+    // Turnos novos abrem sempre sem fundo de troco — a conferência do
+    // fechamento compara a gaveta com o que entrou em dinheiro nas vendas.
+    await prisma.turno.create({
+      data: { operadorId: sessao.usuarioId },
+    });
+  } catch {
+    return { erro: "Não foi possível abrir o caixa. Tente novamente." };
+  }
 
   redirect("/caixa");
 }
@@ -51,12 +49,18 @@ export async function fecharTurno(_estado: EstadoFecharTurno, formData: FormData
     return { erro: "Não há turno aberto para fechar." };
   }
 
-  const vendasDinheiro = await prisma.venda.aggregate({
-    where: { turnoId: turno.id, formaPagamento: "DINHEIRO", status: "CONCLUIDA" },
-    _sum: { valorTotal: true },
+  // Soma apenas as partes pagas em dinheiro (uma venda dividida conta só a
+  // fração em dinheiro), ignorando vendas canceladas.
+  const pagamentosDinheiro = await prisma.pagamentoVenda.aggregate({
+    where: {
+      formaPagamento: "DINHEIRO",
+      venda: { turnoId: turno.id, status: "CONCLUIDA" },
+    },
+    _sum: { valor: true },
   });
 
-  const totalVendasDinheiro = Number(vendasDinheiro._sum.valorTotal ?? 0);
+  const totalVendasDinheiro = Number(pagamentosDinheiro._sum.valor ?? 0);
+  // fundoTroco é 0 em turnos novos; mantido na soma pelos turnos antigos.
   const valorEsperado = calcularValorEsperadoFechamento(Number(turno.fundoTroco), totalVendasDinheiro);
   const diferenca = calcularDiferencaFechamento(valorContado, valorEsperado);
 

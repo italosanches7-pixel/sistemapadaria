@@ -2,18 +2,19 @@
 
 import { prisma } from "@/lib/prisma";
 import { exigirSessao, exigirAdmin } from "@/lib/sessao";
-import { calcularTotalVenda } from "@/lib/calculos";
+import { calcularTotalVenda, validarPagamentos } from "@/lib/calculos";
 import { obterTurnoAbertoDoOperador } from "@/actions/turno";
 import { revalidatePath } from "next/cache";
 import type { FormaPagamento } from "@prisma/client";
 
 export type ItemCarrinhoEntrada = { produtoId: string; quantidade: number };
+export type PagamentoVendaEntrada = { formaPagamento: FormaPagamento; valor: number };
 
 export type ResultadoVenda = { sucesso: boolean; erro?: string; vendaId?: string };
 
 export async function registrarVenda(
   itens: ItemCarrinhoEntrada[],
-  formaPagamento: FormaPagamento
+  pagamentos: PagamentoVendaEntrada[]
 ): Promise<ResultadoVenda> {
   const sessao = await exigirSessao();
 
@@ -48,14 +49,24 @@ export async function registrarVenda(
 
   const valorTotal = calcularTotalVenda(itensComPreco);
 
+  const erroPagamentos = validarPagamentos(pagamentos, valorTotal);
+  if (erroPagamentos) {
+    return { sucesso: false, erro: erroPagamentos };
+  }
+
   const venda = await prisma.venda.create({
     data: {
       turnoId: turno.id,
       operadorId: sessao.usuarioId,
-      formaPagamento,
       valorTotal,
       itens: {
         create: itensComPreco,
+      },
+      pagamentos: {
+        create: pagamentos.map((p) => ({
+          formaPagamento: p.formaPagamento,
+          valor: Math.round(p.valor * 100) / 100,
+        })),
       },
     },
   });

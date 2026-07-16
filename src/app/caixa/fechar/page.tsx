@@ -23,7 +23,7 @@ export default function FecharCaixaPage() {
         <h1 className="mb-4 text-xl font-semibold text-neutral-900">Caixa fechado</h1>
         <dl className="flex flex-col gap-2 text-sm">
           <div className="flex justify-between">
-            <dt className="text-neutral-500">Valor esperado</dt>
+            <dt className="text-neutral-500">Entrou em dinheiro no turno</dt>
             <dd className="font-medium">{formatarMoeda(estado.valorEsperado as number)}</dd>
           </div>
           <div className="flex justify-between">
@@ -49,12 +49,15 @@ export default function FecharCaixaPage() {
   return (
     <div className="mx-auto mt-10 max-w-sm rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
       <h1 className="mb-1 text-xl font-semibold text-neutral-900">Fechar caixa</h1>
-      <p className="mb-6 text-sm text-neutral-500">Conte o dinheiro em caixa e informe o valor abaixo.</p>
+      <p className="mb-6 text-sm text-neutral-500">
+        Conte o dinheiro da gaveta e informe abaixo. O sistema compara com o que entrou em dinheiro nas vendas do seu
+        turno.
+      </p>
 
       <form action={formAction} className="flex flex-col gap-3">
         <div>
           <label className="mb-1 block text-sm font-medium text-neutral-700" htmlFor="valorContado">
-            Valor contado (R$)
+            Dinheiro na gaveta (R$)
           </label>
           <input
             id="valorContado"

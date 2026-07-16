@@ -30,7 +30,7 @@ export async function gerarRelatorio(
 
   const vendasConcluidas = await prisma.venda.findMany({
     where: { dataHora: { gte: inicio, lte: fim }, status: "CONCLUIDA" },
-    include: { operador: true },
+    include: { operador: true, pagamentos: true },
   });
 
   const quantidadeCancelamentos = await prisma.venda.count({
@@ -45,10 +45,18 @@ export async function gerarRelatorio(
   const mapaOperador = new Map<string, { total: number; quantidade: number }>();
 
   for (const venda of vendasConcluidas) {
-    const forma = mapaFormaPagamento.get(venda.formaPagamento) ?? { total: 0, quantidade: 0 };
-    forma.total += Number(venda.valorTotal);
-    forma.quantidade += 1;
-    mapaFormaPagamento.set(venda.formaPagamento, forma);
+    // Numa venda dividida, cada forma recebe a sua parte do valor; a venda
+    // conta uma vez na quantidade de cada forma que usou.
+    const formasDaVenda = new Set<string>();
+    for (const pagamento of venda.pagamentos) {
+      const forma = mapaFormaPagamento.get(pagamento.formaPagamento) ?? { total: 0, quantidade: 0 };
+      forma.total += Number(pagamento.valor);
+      if (!formasDaVenda.has(pagamento.formaPagamento)) {
+        forma.quantidade += 1;
+        formasDaVenda.add(pagamento.formaPagamento);
+      }
+      mapaFormaPagamento.set(pagamento.formaPagamento, forma);
+    }
 
     const operador = mapaOperador.get(venda.operador.nome) ?? { total: 0, quantidade: 0 };
     operador.total += Number(venda.valorTotal);

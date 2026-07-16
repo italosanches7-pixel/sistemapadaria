@@ -7,7 +7,7 @@ type Venda = {
   id: string;
   dataHora: string;
   operador: string;
-  formaPagamento: string;
+  pagamentos: { formaPagamento: string; valor: number }[];
   valorTotal: number;
   status: string;
   canceladoPor: string | null;
@@ -64,7 +64,20 @@ export function ListaVendasAdmin({ vendas }: { vendas: Venda[] }) {
             <td className="py-1.5 text-neutral-500">
               {venda.itens.map((i) => `${i.quantidade}x ${i.nomeProduto}`).join(", ")}
             </td>
-            <td className="py-1.5">{ROTULOS_FORMA_PAGAMENTO[venda.formaPagamento] ?? venda.formaPagamento}</td>
+            <td className="py-1.5">
+              {venda.pagamentos.length === 1 ? (
+                ROTULOS_FORMA_PAGAMENTO[venda.pagamentos[0].formaPagamento] ?? venda.pagamentos[0].formaPagamento
+              ) : (
+                <div className="flex flex-col gap-0.5">
+                  {venda.pagamentos.map((pagamento, i) => (
+                    <span key={i} className="whitespace-nowrap text-neutral-600">
+                      {ROTULOS_FORMA_PAGAMENTO[pagamento.formaPagamento] ?? pagamento.formaPagamento}{" "}
+                      <span className="text-neutral-400">{formatarMoeda(pagamento.valor)}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </td>
             <td className="py-1.5 font-medium">{formatarMoeda(venda.valorTotal)}</td>
             <td className="py-1.5">
               {venda.status === "CONCLUIDA" ? (

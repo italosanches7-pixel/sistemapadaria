@@ -5,14 +5,14 @@ export default async function AdminVendasPage() {
   const vendas = await prisma.venda.findMany({
     orderBy: { dataHora: "desc" },
     take: 100,
-    include: { operador: true, canceladoPor: true, itens: true },
+    include: { operador: true, canceladoPor: true, itens: true, pagamentos: true },
   });
 
   const vendasSerializadas = vendas.map((v) => ({
     id: v.id,
     dataHora: v.dataHora.toISOString(),
     operador: v.operador.nome,
-    formaPagamento: v.formaPagamento,
+    pagamentos: v.pagamentos.map((p) => ({ formaPagamento: p.formaPagamento, valor: Number(p.valor) })),
     valorTotal: Number(v.valorTotal),
     status: v.status,
     canceladoPor: v.canceladoPor?.nome ?? null,
