@@ -194,42 +194,57 @@ export function PainelCaixa({ produtos }: { produtos: Produto[] }) {
           <span>{formatarMoeda(total)}</span>
         </div>
 
+        <label className="mb-1.5 block text-sm font-medium text-neutral-700">Pagamento</label>
+        <div className="mb-2.5 grid grid-cols-2 gap-1 rounded-lg bg-neutral-100 p-1" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!dividido}
+            onClick={() => dividido && cancelarDivisao()}
+            className={`flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium transition ${
+              !dividido ? "bg-white text-brand-800 shadow-sm" : "text-neutral-500 hover:text-neutral-700"
+            }`}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <path d="M2 10h20" />
+            </svg>
+            Uma forma
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={dividido}
+            onClick={() => !dividido && iniciarDivisao()}
+            disabled={carrinho.length === 0}
+            className={`flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium transition disabled:opacity-50 ${
+              dividido ? "bg-white text-brand-800 shadow-sm" : "text-neutral-500 hover:text-neutral-700"
+            }`}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
+              <path d="M16 3h5v5" />
+              <path d="M8 3H3v5" />
+              <path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3" />
+              <path d="m15 9 6-6" />
+            </svg>
+            Dividir
+          </button>
+        </div>
+
         {!dividido ? (
-          <>
-            <label className="mb-1 block text-sm font-medium text-neutral-700">Forma de pagamento</label>
-            <select
-              value={formaPagamento}
-              onChange={(e) => setFormaPagamento(e.target.value as FormaPagamento)}
-              className="mb-1 w-full rounded-md border border-neutral-300 px-3 py-2"
-            >
-              {FORMAS_PAGAMENTO.map((forma) => (
-                <option key={forma.valor} value={forma.valor}>
-                  {forma.rotulo}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={iniciarDivisao}
-              disabled={carrinho.length === 0}
-              className="mb-3 text-left text-sm font-medium text-brand-700 hover:underline disabled:opacity-50"
-            >
-              Dividir pagamento (ex.: parte no Pix, parte em dinheiro)
-            </button>
-          </>
+          <select
+            value={formaPagamento}
+            onChange={(e) => setFormaPagamento(e.target.value as FormaPagamento)}
+            className="mb-3 w-full rounded-md border border-neutral-300 px-3 py-2"
+          >
+            {FORMAS_PAGAMENTO.map((forma) => (
+              <option key={forma.valor} value={forma.valor}>
+                {forma.rotulo}
+              </option>
+            ))}
+          </select>
         ) : (
           <div className="mb-3">
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-sm font-medium text-neutral-700">Pagamento dividido</span>
-              <button
-                type="button"
-                onClick={cancelarDivisao}
-                className="text-xs font-medium text-neutral-500 hover:underline"
-              >
-                Usar uma forma só
-              </button>
-            </div>
-
             <div className="flex flex-col gap-1.5">
               {linhasPagamento.map((linha, indice) => (
                 <div key={indice} className="flex items-center gap-1.5">
